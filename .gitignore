@@ -36,6 +36,16 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+__pycache__/
+*.pyc
+.env
+logs/
+plugins/__pycache__/
+dags/__pycache__/
+*.db
+*.log
+.airflow/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
