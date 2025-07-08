@@ -17,4 +17,4 @@ jobs:
             exit 1
           else
             echo "✅ Branch '${{ github.head_ref }}' is allowed to merge into main."
-          fi
+
