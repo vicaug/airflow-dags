@@ -1,20 +1,16 @@
-name: Delete Merged Branches
+name: Delete branch after merge
 
 on:
-  push:
-    branches:
-      - main  # or 'develop', depending on your flow
+  pull_request:
+    types: [closed]
 
 jobs:
-  delete-merged:
+  delete-branch:
+    if: github.event.pull_request.merged == true && !startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Delete Merged Branches
-        uses: peter-evans/delete-merged-branch@v2
+    steps:
+      - name: Delete branch
+        uses: peter-evans/delete-branch@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: keep certain branches
-          exclude: main,develop
+          branch: ${{ github.event.pull_request.head.ref }}
