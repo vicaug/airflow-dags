@@ -1,0 +1,20 @@
+name: Enforce PR Source to be Release Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source branch
+        run: |
+          echo "Source branch is ${{ github.head_ref }}"
+          if [[ ! "${{ github.head_ref }}" =~ ^release(/.*)?$ ]]; then
+            echo "❌ Only release or release/* branches can be merged into main!"
+            exit 1
+          else
+            echo "✅ Branch '${{ github.head_ref }}' is allowed to merge into main."
+          fi

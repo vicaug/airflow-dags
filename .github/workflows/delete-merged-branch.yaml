@@ -1,0 +1,20 @@
+name: Delete Merged Branches
+
+on:
+  push:
+    branches:
+      - main  # or 'develop', depending on your flow
+
+jobs:
+  delete-merged:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Delete Merged Branches
+        uses: peter-evans/delete-merged-branch@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: keep certain branches
+          exclude: main,develop
