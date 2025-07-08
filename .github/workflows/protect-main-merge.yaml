@@ -9,12 +9,12 @@ jobs:
   check-branch:
     runs-on: ubuntu-latest
     steps:
-      - name: Fail if source is not a release branch
+      - name: Validate source branch
         run: |
           echo "Source branch is ${{ github.head_ref }}"
-          if [[ ! "${{ github.head_ref }}" =~ ^release\/.*$ ]]; then
-            echo "❌ Only release/* branches can be merged into main!"
+          if [[ ! "${{ github.head_ref }}" =~ ^release(/.*)?$ ]]; then
+            echo "❌ Only release or release/* branches can be merged into main!"
             exit 1
           else
-            echo "✅ Valid release/* branch"
-          fi
+            echo "✅ Branch '${{ github.head_ref }}' is allowed to merge into main."
+
