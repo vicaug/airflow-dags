@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # precisamos do histórico para o diff
+          fetch-depth: 0  # necessário para diff completo
 
       - name: Get base commit of PR
         id: base
@@ -27,7 +27,7 @@ jobs:
         run: |
           git fetch origin ${{ github.event.pull_request.base.ref }}
           git diff --unified=0 origin/${{ github.event.pull_request.base.ref }}...HEAD > diff.txt
-          head -c 12000 diff.txt > short_diff.txt  # limita o tamanho para a API
+          head -c 12000 diff.txt > short_diff.txt  # limita tamanho para API
           echo "DIFF<<EOF" >> $GITHUB_ENV
           cat short_diff.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -35,7 +35,6 @@ jobs:
       - name: Get explanation from ChatGPT
         id: ai
         run: |
-          echo "Chamando OpenAI..."
           response=$(curl -s https://api.openai.com/v1/chat/completions \
             -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
             -H "Content-Type: application/json" \
@@ -54,7 +53,13 @@ jobs:
               "temperature": 0.4
             }')
           echo "$response" > response.json
+          echo "Resposta da API:"
+          cat response.json
+
           explanation=$(jq -r '.choices[0].message.content' response.json)
+          echo "Explicação extraída:"
+          echo "$explanation"
+
           echo "EXPLANATION<<EOF" >> $GITHUB_ENV
           echo "$explanation" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -64,8 +69,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            console.log("Explanation:", process.env.EXPLANATION);
+            const explanation = process.env.EXPLANATION || 'Sem explicação disponível.';
+
             const pr = context.payload.pull_request;
-            const explanation = process.env.EXPLANATION;
 
             const marker = '### 🤖 Explicação Automática (IA)';
             const newSection = `${marker}\n\n${explanation}`;
