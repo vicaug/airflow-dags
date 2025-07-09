@@ -16,14 +16,12 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
 
-            // Obter commits do PR
             const { data: commits } = await github.rest.pulls.listCommits({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number
             });
 
-            // Obter arquivos alterados no PR
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -33,23 +31,25 @@ jobs:
             const commitList = commits.map(c => `- ${c.commit.message} (${c.sha.substring(0, 7)})`).join('\n');
             const fileList = files.map(f => `- \`${f.filename}\``).join('\n');
 
-            const summary = `
----
-### 🧾 Resumo Automático do PR
+            const summaryLines = [
+              '---',
+              '### 🧾 Resumo Automático do PR',
+              '',
+              `**Commits:** ${commits.length}`,
+              `**Arquivos Alterados:** ${files.length}`,
+              '',
+              '#### 🔨 Commits:',
+              commitList,
+              '',
+              '#### 🗂️ Arquivos:',
+              fileList
+            ];
 
-**Commits:** ${commits.length}  
-**Arquivos Alterados:** ${files.length}
+            const summary = summaryLines.join('\n');
 
-#### 🔨 Commits:
-${commitList}
-
-#### 🗂️ Arquivos:
-${fileList}
-`;
-
-            // Verificar se a descrição já tem um resumo antigo e substituir
-            let newBody;
             const marker = `### 🧾 Resumo Automático do PR`;
+            let newBody;
+
             if (pr.body && pr.body.includes(marker)) {
               newBody = pr.body.split(marker)[0].trim() + '\n\n' + summary.trim();
             } else {
