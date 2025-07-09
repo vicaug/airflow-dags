@@ -1,20 +1,30 @@
-name: Delete Merged Branches
+name: Delete branch after merge
 
 on:
-  push:
-    branches:
-      - main  # or 'develop', depending on your flow
+  pull_request:
+    types: [closed]
 
 jobs:
-  delete-merged:
+  delete-branch:
+    if: github.event.pull_request.merged == true && !startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Delete Merged Branches
-        uses: peter-evans/delete-merged-branch@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: keep certain branches
-          exclude: main,develop
+    steps:
+      - name: Delete branch via API
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Deleting branch $BRANCH in repo $REPO"
+          response=$(curl -s -o response.txt -w "%{http_code}" -X DELETE \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/$REPO/git/refs/heads/$BRANCH)
+          echo "HTTP status code: $response"
+          echo "Response body:"
+          cat response.txt
+          if [ "$response" != "204" ]; then
+            echo "Failed to delete branch"
+            exit 1
+          fi
