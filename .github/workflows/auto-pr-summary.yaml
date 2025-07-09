@@ -31,19 +31,21 @@ jobs:
             const commitList = commits.map(c => `- ${c.commit.message} (${c.sha.substring(0, 7)})`).join('\n');
             const fileList = files.map(f => `- \`${f.filename}\``).join('\n');
 
-            const summary = `
----
-### 🧾 Resumo Automático do PR
+            const summaryLines = [
+              '---',
+              '### 🧾 Resumo Automático do PR',
+              '',
+              `**Commits:** ${commits.length}`,
+              `**Arquivos Alterados:** ${files.length}`,
+              '',
+              '#### 🔨 Commits:',
+              commitList,
+              '',
+              '#### 🗂️ Arquivos:',
+              fileList
+            ];
 
-**Commits:** ${commits.length}  
-**Arquivos Alterados:** ${files.length}
-
-#### 🔨 Commits:
-${commitList}
-
-#### 🗂️ Arquivos:
-${fileList}
-`;
+            const summary = summaryLines.join('\n');
 
             const marker = `### 🧾 Resumo Automático do PR`;
             let newBody;
